@@ -1,74 +1,122 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
-let isDown = false;
-window.addEventListener('keydown', (keyEvent) => {
-  switch (keyEvent.key) {
-    case " ":
-      isDown = true;
-      break;
-    default:
+window.addEventListener('DOMContentLoaded', () => {
+  const app = new App();
+  app.load().then(() => {
+    app.init();
+    app.render();
+  })
+});
+
+class App {
+  static get MATERIAL_PARAM() {
+    return {
+      color: 0xffffff,
+      // transparent: true,
+      // opacity: 0.5,
+      // side: THREE.FrontSide,
+    }
   }
-});
-window.addEventListener('keyup', (keyEvent) => {
-  isDown = false;
-});
 
-window.addEventListener('resize', () => {
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-});
+  constructor() {
+    this.scene;
+    this.group;
+    this.renderer;
+    this.camera;
+    this.directionalLight;
+    this.geometry;
+    this.material;
+    this.box;
+    this.texture;
+    this.controls;
 
-const scene = new THREE.Scene();
-const group = new THREE.Group();
-scene.add(group);
+    this.render = this.render.bind(this);
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
+    this.isDown = false;
 
-document.body.appendChild(renderer.domElement);
+    window.addEventListener('keydown', (keyEvent) => {
+      switch (keyEvent.key) {
+        case " ":
+          this.isDown = true;
+          break;
+        default:
+      }
+    });
+    window.addEventListener('keyup', (keyEvent) => {
+      this.isDown = false;
+    });
 
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000.0,
-);
-camera.position.z = 15.0;
+    window.addEventListener('resize', () => {
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+    });
+  }
 
-const directionalLight = new THREE.DirectionalLight(
-  0xffffff,
-  1.0,
-);
-directionalLight.position.set(1.0, 1.0, 1.0);
-scene.add(directionalLight);
+  load() {
+    return new Promise((resolve) => {
+      const imgPath = 'img-1.jpg';
+      const loader = new THREE.TextureLoader();
+      loader.load(imgPath, (texture) => {
+        this.texture = texture;
+        resolve();
+      });
+    });
+  }
 
-const geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
-const material = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+  init() {
+    this.scene = new THREE.Scene();
+    this.group = new THREE.Group();
+    this.scene.add(this.group);
 
-const boxArray = [];
-for (let i = 1; i < 100; i++) {
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.x = (Math.random() * 2.0 - 1.0) * 5.0;
-  mesh.position.y = (Math.random() * 2.0 - 1.0) * 5.0;
-  mesh.position.z = (Math.random() * 2.0 - 1.0) * 5.0;
-  group.add(mesh)
-  boxArray.push(mesh);
-}
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-// controls.enableDamping = true;
-// controls.autoRotate = true;
+    document.body.appendChild(this.renderer.domElement);
 
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000.0,
+    );
+    this.camera.position.z = 15.0;
 
-  if (isDown === true) {
-    // group.rotation.x += 0.01;
-    group.rotation.y += 0.01;
+    this.directionalLight = new THREE.DirectionalLight(
+      0xffffff,
+      1.0,
+    );
+    this.directionalLight.position.set(1.0, 1.0, 1.0);
+    this.scene.add(this.directionalLight);
+
+    this.geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    this.material = new THREE.MeshLambertMaterial(App.MATERIAL_PARAM);
+    this.material.map = this.texture;
+
+    const boxArray = [];
+    for (let i = 1; i < 100; i++) {
+      this.box = new THREE.Mesh(this.geometry, this.material);
+      this.box.position.x = (Math.random() * 2.0 - 1.0) * 5.0;
+      this.box.position.y = (Math.random() * 2.0 - 1.0) * 5.0;
+      this.box.position.z = (Math.random() * 2.0 - 1.0) * 5.0;
+      this.group.add(this.box);
+      boxArray.push(this.box);
+    }
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    // controls.enableDamping = true;
+    // controls.autoRotate = true;
+  }
+
+  render() {
+    requestAnimationFrame(this.render);
+    // this.controls.update();
+    this.renderer.render(this.scene, this.camera);
+
+    if (this.isDown === true) {
+      // this.group.rotation.x += 0.01;
+      this.group.rotation.y += 0.01;
+    }
   }
 }
-animate();
