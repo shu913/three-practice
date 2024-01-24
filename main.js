@@ -124,7 +124,6 @@ class App {
     this.composer.addPass(this.glitchPass);
     this.dotScreenPass = new DotScreenPass();
     this.composer.addPass(this.dotScreenPass);
-    this.dotScreenPass.renderToScreen = true;
   }
 
   render() {
