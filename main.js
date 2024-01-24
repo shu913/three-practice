@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
+import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass';
+import { DotScreenPass } from 'three/examples/jsm/postprocessing/DotScreenPass';
 
 window.addEventListener('DOMContentLoaded', () => {
   const app = new App();
@@ -30,6 +34,11 @@ class App {
     this.box;
     this.texture;
     this.controls;
+
+    this.composer;
+    this.renderPass;
+    this.glitchPass;
+    this.dotScreenPass;
 
     this.render = this.render.bind(this);
 
@@ -107,12 +116,22 @@ class App {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     // controls.enableDamping = true;
     // controls.autoRotate = true;
+
+    this.composer = new EffectComposer(this.renderer);
+    this.renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(this.renderPass);
+    this.glitchPass = new GlitchPass();
+    this.composer.addPass(this.glitchPass);
+    this.dotScreenPass = new DotScreenPass();
+    this.composer.addPass(this.dotScreenPass);
+    this.dotScreenPass.renderToScreen = true;
   }
 
   render() {
     requestAnimationFrame(this.render);
     // this.controls.update();
-    this.renderer.render(this.scene, this.camera);
+    // this.renderer.render(this.scene, this.camera);
+    this.composer.render();
 
     if (this.isDown === true) {
       // this.group.rotation.x += 0.01;
